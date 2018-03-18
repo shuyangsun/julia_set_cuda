@@ -17,3 +17,9 @@ static void HandleCUDAError(cudaError_t const err, const char *file, int line) {
 }
 
 #define HANDLE_CUDA_ERROR( err ) (HandleCUDAError( err, __FILE__, __LINE__ ))
+
+#ifdef __CUDACC__
+    #define HOST_DEVICE __host__ __device__
+#else
+  #define HOST_DEVICE
+#endif
