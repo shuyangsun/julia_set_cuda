@@ -147,7 +147,6 @@ void GPUJulia(
     unsigned int const block_xy
 ) {
     unsigned char *d_bitmap{};
-    cuComplex<T> *d_julia_constant;
 
     HANDLE_CUDA_ERROR(cudaMalloc(reinterpret_cast<void **>(&d_bitmap), bitmap.image_size()));
 
