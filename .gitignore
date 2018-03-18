@@ -4,3 +4,4 @@
 *.ptx
 *.cubin
 *.fatbin
+julia_set_vs_prj/
