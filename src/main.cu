@@ -1,8 +1,6 @@
 
-#include "cuda_runtime.h"
 #include "common/cpu_bitmap.h"
 
-#include "helper.hpp"
 #include "julia.hpp"
 #include "julia_complex.hpp"
 
@@ -47,7 +45,7 @@ int main(int const argc, char ** const argv) {
         block_xy
     );
     double const gpu_duration = double(clock() - gpu_start) / CLOCKS_PER_SEC;
-    printf("GPU duration: %.2fs.\n\n", gpu_duration);
+    printf("GPU duration: %.2fs.\n", gpu_duration);
 
     bitmap.display_and_exit();
 
