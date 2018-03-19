@@ -18,6 +18,8 @@
 #define __CPU_BITMAP_H__
 
 #include "gl_helper.h"
+#include "free_image/FreeImage.h"
+#include "stdio.h"
 
 struct CPUBitmap {
     unsigned char    *pixels;
@@ -39,7 +41,7 @@ struct CPUBitmap {
     unsigned char* get_ptr( void ) const   { return pixels; }
     long image_size( void ) const { return x * y * 4; }
 
-    void display_and_exit( void(*e)(void*) = NULL ) {
+    void display_and_exit( void(*e)(void*) = NULL) {
         CPUBitmap**   bitmap = get_bitmap_ptr();
         *bitmap = this;
         bitmapExit = e;
@@ -54,6 +56,22 @@ struct CPUBitmap {
         glutKeyboardFunc(Key);
         glutDisplayFunc(Draw);
         glutMainLoop();
+    }
+
+    void save_to_file(const char *file_name) {
+        CPUBitmap**   bitmap = get_bitmap_ptr();
+        *bitmap = this;
+        bitmapExit = nullptr;
+        // a bug in the Windows GLUT implementation prevents us from
+        // passing zero arguments to glutInit()
+        int c = 1;
+        char* dummy = "";
+        glutInit(&c, &dummy);
+        glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
+        glutInitWindowSize(x, y);
+        glutCreateWindow("bitmap");
+        glutKeyboardFunc(Key);
+        DrawToFile(file_name);
     }
 
      // static method used for glut callbacks
@@ -74,11 +92,42 @@ struct CPUBitmap {
     }
 
     // static method used for glut callbacks
-    static void Draw( void ) {
+    static void Draw() {
         CPUBitmap*   bitmap = *(get_bitmap_ptr());
         glClearColor( 0.0, 0.0, 0.0, 1.0 );
         glClear( GL_COLOR_BUFFER_BIT );
         glDrawPixels( bitmap->x, bitmap->y, GL_RGBA, GL_UNSIGNED_BYTE, bitmap->pixels );
+        glFlush();
+    }
+
+    // static method used for glut callbacks
+    static void DrawToFile(const char *file_name) {
+        CPUBitmap*   bitmap = *(get_bitmap_ptr());
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDrawPixels(bitmap->x, bitmap->y, GL_RGBA, GL_UNSIGNED_BYTE, bitmap->pixels);
+
+        if (file_name != nullptr) {
+            // Make the BYTE array, factor of 3 because it's RBG.
+
+            printf("Saving image...\n");
+            BYTE* pixels = new BYTE[3 * bitmap->x * bitmap->y];
+
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glReadPixels(0, 0, bitmap->x, bitmap->y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+            // Convert to FreeImage format & save to file
+            FIBITMAP* image = FreeImage_ConvertFromRawBits(
+                pixels, bitmap->x, bitmap->y, 3 * bitmap->x, 24, 0xFF0000, 0x00FF00, 0x0000FF, false
+            );
+            FreeImage_Save(FIF_PNG, image, file_name, 0);
+
+            // Free resources
+            FreeImage_Unload(image);
+            delete[] pixels;
+            printf("Saved image.\n");
+        }
+
         glFlush();
     }
 };
