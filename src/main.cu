@@ -1,45 +1,13 @@
 
 #include "cuda_runtime.h"
-#include "helper.hpp"
 #include "common/cpu_bitmap.h"
+
+#include "helper.hpp"
+#include "julia_complex.hpp"
 
 #include <iostream>
 #include <ctime>
 
-
-template<typename T>
-class cuComplex {
-public:
-    T r;
-    T l;
-    T l2_norm;
-
-    HOST_DEVICE cuComplex(T const real, T const lateral) :
-        r{ real },
-        l{ lateral },
-        l2_norm{ real * real + lateral * lateral }
-    {}
-
-    HOST_DEVICE T L2Norm2() const { return l2_norm * l2_norm; }
-
-    HOST_DEVICE cuComplex operator=(cuComplex& const rhs) {
-        this->r = rhs.r;
-        this->l = rhs.l;
-        this->l2_norm = rhs.l2_norm;
-        return *this;
-    }
-
-    HOST_DEVICE cuComplex operator+(cuComplex& const rhs) const {
-        return cuComplex(r + rhs.r, l + rhs.l);
-    }
-
-    HOST_DEVICE cuComplex operator*(cuComplex& const rhs) const {
-        return cuComplex(
-            r * rhs.r - l * rhs.l,
-            r * rhs.l + l * rhs.r
-        );
-    }
-};
 
 template<typename T>
 void CPUJulia(
