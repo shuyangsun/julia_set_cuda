@@ -19,9 +19,9 @@ int main(int const argc, char ** const argv) {
     constexpr DType x_scale{ 1.6 / zoom_scale };
     constexpr DType y_scale{ 0.9 / zoom_scale };
     constexpr DType julia_c_real{ -0.8 };
-    constexpr DType julia_c_start{ 0.2 };
+    constexpr DType julia_c_start{ 0.1875 };
     constexpr DType julia_c_stop{ 0 };
-    constexpr DType julia_c_step{ -0.0001 };
+    constexpr DType julia_c_step{ -0.0002 };
     auto julia_constant = cuComplex<DType>(julia_c_real, (julia_c_start + julia_c_stop) / 2);
     constexpr unsigned int block_xy = 32;
     constexpr bool should_time_cpu{ false };
@@ -59,9 +59,10 @@ int main(int const argc, char ** const argv) {
             file_name,
             "C:\\Users\\shuyangsun\\Desktop\\julia_set_sequence\\julia_set_%d_%d.png",
             abs(int(julia_c_real * 10)),
-            abs(int(c * 1000))
+            abs(int(c * 10000))
         );
         bitmap.save_to_file(file_name);
+        HANDLE_CUDA_ERROR(cudaDeviceReset());
         // bitmap.display_and_exit();
     }
     
